@@ -247,6 +247,39 @@
     cursor:pointer;
   }
   .item-foto.editavel{cursor:pointer;}
+  .item-foto.zoomavel{cursor:zoom-in;}
+  .lightbox{
+    display:none;
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,.85);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    animation:lightboxFade .18s ease-out;
+  }
+  .lightbox.aberta{display:flex;}
+  @keyframes lightboxFade{from{opacity:0;}to{opacity:1;}}
+  .lightbox img{
+    max-width:100%;
+    max-height:85vh;
+    border-radius:16px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .lightbox-fechar{
+    position:absolute;
+    top:18px;right:18px;
+    width:40px;height:40px;
+    border-radius:50%;
+    background:rgba(255,255,255,.15);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.3);
+    font-size:1.3rem;
+    line-height:1;
+    cursor:pointer;
+  }
   .cobertura-foto{
     width:100%;
     max-height:180px;
@@ -990,6 +1023,11 @@
       <button class="checkout-close" id="coberturaFechar">✕</button>
     </div>
     <img class="cobertura-foto" id="coberturaFoto" src="" alt="" style="display:none;">
+
+    <div class="lightbox" id="lightbox">
+      <button type="button" class="lightbox-fechar" id="lightboxFechar">✕</button>
+      <img id="lightboxImg" src="" alt="">
+    </div>
     <p class="cobertura-preco-base" id="coberturaPrecoBase"></p>
 
     <div class="campo">
@@ -2133,7 +2171,7 @@
             ${modoAdmin ? `<button type="button" class="item-excluir" title="Remover item">✕</button>` : ''}
             <div class="item-info">
               ${item.imagem
-                ? `<img class="item-foto${modoAdmin ? ' editavel' : ''}" src="${item.imagem}" alt="${item.nome}" title="${modoAdmin ? 'Toque para trocar a foto' : ''}">`
+                ? `<img class="item-foto${modoAdmin ? ' editavel' : ' zoomavel'}" src="${item.imagem}" alt="${item.nome}" title="${modoAdmin ? 'Toque para trocar a foto' : 'Toque para ampliar'}">`
                 : (modoAdmin ? `<div class="item-foto item-foto-vazia" title="Adicionar foto">📷</div>` : '')}
               <div class="item-check">${qtd > 0 ? '✓' : ''}</div>
               <div class="item-texts">
@@ -2161,6 +2199,9 @@
             row.querySelector('.item-excluir').onclick = (ev) => removerItem(i, idx, ev);
             const fotoEl = row.querySelector('.item-foto');
             if(fotoEl) fotoEl.onclick = (ev) => { ev.stopPropagation(); editarFotoItem(i, idx); };
+          } else {
+            const fotoEl = row.querySelector('.item-foto.zoomavel');
+            if(fotoEl) fotoEl.onclick = (ev) => { ev.stopPropagation(); abrirLightbox(item.imagem, item.nome); };
           }
           section.appendChild(row);
         });
@@ -2180,6 +2221,21 @@
 
     atualizarBarraCarrinho();
   }
+
+  function abrirLightbox(src, alt){
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightboxImg');
+    img.src = src;
+    img.alt = alt || '';
+    lb.classList.add('aberta');
+  }
+  function fecharLightbox(){
+    document.getElementById('lightbox').classList.remove('aberta');
+  }
+  document.getElementById('lightbox').onclick = (ev) => {
+    if(ev.target.id === 'lightbox') fecharLightbox();
+  };
+  document.getElementById('lightboxFechar').onclick = fecharLightbox;
 
   render();
 </script>
